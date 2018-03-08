@@ -1,0 +1,12 @@
+github-asset-repository: git@github.com:GITHUB_USERNAME/pal-tracker-distributed-dotnet.git
+github-asset-branch: solution
+github-asset-private-key: |
+  -----BEGIN RSA PRIVATE KEY-----
+  REPLACE WITH YOUR PRIVATE KEY HERE
+  -----END RSA PRIVATE KEY-----
+github-src-repository: git@github.com:GITHUB_USERNAME/pal-tracker-distributed-dotnet.git
+github-src-branch: concourse-automation
+github-src-private-key: |
+  -----BEGIN RSA PRIVATE KEY-----
+  REPLACE WITH YOUR PRIVATE KEY HERE
+  -----END RSA PRIVATE KEY-----

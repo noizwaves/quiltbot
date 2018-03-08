@@ -1,0 +1,71 @@
+---
+resources:
+- name: asset-repo
+  type: git
+  source:
+    uri: {{github-asset-repository}}
+    branch: {{github-asset-branch}}
+    private_key: {{github-asset-private-key}}
+
+- name: src-repo
+  type: git
+  source:
+    uri: {{github-src-repository}}
+    branch: {{github-src-branch}}
+    private_key: {{github-src-private-key}}
+
+jobs:
+- name: build
+  plan:
+  - get: asset-repo
+    trigger: true
+  - get: src-repo
+    trigger: false
+  - task: build and test
+    config:
+      platform: linux
+
+      image_resource:
+        type: docker-image
+        source:
+          repository: concourse/buildroot
+          tag: git
+
+      inputs:
+        - name: asset-repo
+        - name: src-repo
+
+      outputs:
+      - name: updated-src-repo
+
+      run:
+        path: bash
+        args:
+        - -exc
+        - |
+
+          set -e
+
+
+          # 1. Regnerate patches against updated repo
+          git clone src-repo updated-src-repo
+
+          # 2. Sync asset patch files with src repo
+          rm updated-src-repo/patches/*.patch
+          cd asset-repo && git format-patch --root -o ../updated-src-repo/patches && cd ..
+
+          # 3. Commit changes onto src if present
+          cd updated-src-repo
+
+          read lines words chars filename <<< $(git diff | wc)
+          if [[ $lines -gt 0 ]]
+          then
+            git config user.name "QuiltBot"
+            git config user.email "aneumann+quiltbot@pivotal.io"
+            git add -A
+            git commit -m "Changes from `date '+%B %d %Y at %I:%M:%S%p UTC'`"
+          else
+            echo "No changes detected so nothing to commit"
+          fi
+  - put: src-repo
+    params: {repository: updated-src-repo}
