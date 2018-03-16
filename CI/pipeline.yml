@@ -51,13 +51,18 @@ jobs:
           git clone src-repo updated-src-repo
 
           # 2. Sync asset patch files with src repo
-          rm updated-src-repo/patches/*.patch
+          if [ -f updated-src-repo/patches/*.patch ]
+          then
+            rm updated-src-repo/patches/*.patch
+          fi
           cd asset-repo && git format-patch --root -o ../updated-src-repo/patches && cd ..
 
           # 3. Commit changes onto src if present
           cd updated-src-repo
 
+          git add -AN
           read lines words chars filename <<< $(git diff | wc)
+
           if [[ $lines -gt 0 ]]
           then
             git config user.name "QuiltBot"
